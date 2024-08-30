@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load form_tags %}
+
+{% block title %}Criar Usuário{% endblock %}
+
+{% block content %}
+  <div class="card">
+    <div class="card-header">
+      <h2 class="h4">Criar Novo Usuário</h2>
+    </div>
+    <div class="card-body">
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          {{ form.username.label_tag }}
+          {{ form.username|add_class:"form-control" }}
+        </div>
+        <div class="form-group">
+          {{ form.email.label_tag }}
+          {{ form.email|add_class:"form-control" }}
+        </div>
+        <div class="form-group">
+          {{ form.password.label_tag }}
+          {{ form.password|add_class:"form-control" }}
+        </div>
+        <div class="form-group">
+          {{ form.setor.label_tag }}
+          {{ form.setor }}
+        </div>
+        <button type="submit" class="btn btn-primary">Criar Usuário</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

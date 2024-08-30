@@ -1,0 +1,215 @@
+{% load bootstrap4 %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Index</title>
+    {% bootstrap_css %}
+    <link href="{% static 'css/styles.css' %}" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf_viewer.min.css"/>
+
+    <style>
+        .pdf-container {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            overflow: auto;
+            background: #333;
+        }
+
+        .pdf-page {
+            margin: 0px auto 10px 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+            width: 700px;
+        }
+
+        /* Overlay to disable right-click */
+        .no-right-click {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Arquivos</h1>
+
+        <!-- Campo de Busca -->
+        <input type="text" id="searchInput" class="form-control mb-3" placeholder="Buscar arquivo pelo código...">
+
+        {% if arquivos %}
+        <table class="table table-dark">
+            <thead>
+                <tr>
+                    <th scope="col">Download</th>
+                    <th scope="col">Arquivo</th>
+                    <th scope="col">Código</th>
+                    <th scope="col">Versão</th>
+                </tr>
+            </thead>
+            <tbody id="arquivoTable">
+                {% for arquivo in arquivos %}
+                    <tr>
+                        <td scope="row">
+                            {% if arquivo.disponivel_para_download %}
+                                <a class="btn btn-primary" href="{% url 'download_arquivo' arquivo.id %}" download>
+                                    Download
+                                </a>
+                            {% endif %}
+                        </td>
+                        <td scope="row">
+                            {% if arquivo.disponivel_para_download %}
+                                {{ arquivo.nome }}
+                            {% else %}
+                                <a href="#modal{{arquivo.id}}" data-toggle="modal">{{ arquivo.nome }}</a>
+                            {% endif %}
+                        </td>
+                        <td scope="row">{{ arquivo.codigo }}</td>
+                        <td scope="row">{{ arquivo.versao }}</td>
+                    </tr>
+
+                    <!-- Modal -->
+                    {% if not arquivo.disponivel_para_download %}
+                    <div class="modal fade" id="modal{{arquivo.id}}" tabindex="-1" role="dialog" aria-labelledby="modalLabel{{arquivo.id}}" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="modalLabel{{arquivo.id}}">{{ arquivo.nome }}</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body p-0">
+                                    {% if arquivo.arquivopdf and arquivo.arquivopdf.url %}
+                                        <div class="pdf-container" id="pdf-container{{ arquivo.id }}">
+                                            <!-- Overlay to disable right-click -->
+                                            <div class="no-right-click"></div>
+                                        </div>
+
+                                        <script>
+                                            document.addEventListener('DOMContentLoaded', function () {
+                                                var url = '{{ arquivo.arquivopdf.url }}';
+                                                var container = document.getElementById('pdf-container{{ arquivo.id }}');
+
+                                                // Disable right-click context menu
+                                                container.addEventListener('contextmenu', function(e) {
+                                                    e.preventDefault();
+                                                }, false);
+
+                                                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+
+                                                pdfjsLib.getDocument(url).promise.then(function(pdf) {
+                                                    var pageNumber = 1;
+                                                    var renderPage = function(num) {
+                                                        pdf.getPage(num).then(function(page) {
+                                                            var viewport = page.getViewport({ scale: 1.5 });
+                                                            var canvas = document.createElement('canvas');
+                                                            canvas.className = 'pdf-page';
+                                                            var context = canvas.getContext('2d');
+                                                            canvas.height = viewport.height;
+                                                            canvas.width = viewport.width;
+
+                                                            var renderContext = {
+                                                                canvasContext: context,
+                                                                viewport: viewport
+                                                            };
+
+                                                            page.render(renderContext).promise.then(function() {
+                                                                container.appendChild(canvas);
+                                                                if (num < pdf.numPages) {
+                                                                    renderPage(num + 1);
+                                                                }
+                                                            });
+                                                        });
+                                                    };
+                                                    renderPage(pageNumber);
+                                                });
+                                            });
+                                        </script>
+                                    {% else %}
+                                        <p class="text-center">Nenhum arquivo PDF disponível para este arquivo.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <h2>Ainda não existem arquivos cadastrados. :(</h2>
+        {% endif %}
+
+        <!-- Botão Sair -->
+        <div class="text-right mt-4">
+            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#logoutModal">
+                Sair
+            </button>
+        </div>
+
+        <!-- Modal de Confirmação -->
+        <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="logoutModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="logoutModalLabel">Deseja sair?</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        Tem certeza de que deseja sair?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Não</button>
+                        <a href="{% url 'logout' %}" class="btn btn-danger">Sim</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById('searchInput');
+            filter = input.value.toLowerCase();
+            table = document.getElementById('arquivoTable');
+            tr = table.getElementsByTagName('tr');
+
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName('td')[2];  // Index 2 para filtrar pelo código
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+
+            var rows = Array.prototype.slice.call(tr);
+            rows.sort(function(a, b) {
+                var A = a.getElementsByTagName('td')[2].innerText.toLowerCase();  // Index 2 para ordenar pelo código
+                var B = b.getElementsByTagName('td')[2].innerText.toLowerCase();
+                return A < B ? -1 : A > B ? 1 : 0;
+            });
+
+            for (i = 0; i < rows.length; i++) {
+                table.appendChild(rows[i]);
+            }
+        });
+    </script>
+
+    {% bootstrap_javascript jquery='full' %}
+</body>
+</html>

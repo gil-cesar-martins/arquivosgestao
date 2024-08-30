@@ -1,0 +1,36 @@
+{% load bootstrap4 %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Arquivo</title>
+    {% bootstrap_css %}
+</head>
+<body>
+    <div class="container">
+        <h1>Arquivo</h1>
+        {% bootstrap_messages %}
+
+        <form action="{% url 'arquivo' %}" method="get" class="form" autocomplete="off">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="search">Buscar Arquivo</label>
+                <input type="text" name="search" id="search" class="form-control" placeholder="Digite para buscar...">
+            </div>
+            <div id="resultados" class="mt-3">
+                <!-- Os resultados da busca serão exibidos aqui -->
+                {% if search_results %}
+                    <ul class="list-group">
+                        {% for arquivo in search_results %}
+                            <li class="list-group-item">
+                                {{ arquivo.nome_do_arquivo }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+    {% bootstrap_javascript jquery='full' %}
+</body>
+</html>
