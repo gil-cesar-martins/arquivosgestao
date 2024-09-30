@@ -12,6 +12,7 @@ from .utils import notify_users, notify_sems_users  # Certifique-se de importar 
 from .forms import UserCreationForm
 from django.http import HttpResponse, Http404
 import mimetypes
+from .health_check import health_check
 
 @login_required(login_url='login')
 def index(request):

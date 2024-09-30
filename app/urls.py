@@ -1,6 +1,6 @@
 from django.urls import path
 from django.shortcuts import redirect, render
-from .views import index, contato, arquivo, login_view, logout_view, usuario, upload_arquivo, download_arquivo
+from .views import index, contato, arquivo, login_view, logout_view, usuario, upload_arquivo, download_arquivo, health_check
 from django.contrib.auth.decorators import login_required, user_passes_test
 from .forms import UserCreationForm
 
@@ -13,6 +13,7 @@ urlpatterns = [
     path('usuario/',usuario, name='usuario'),
     path('upload/', upload_arquivo, name='upload_arquivo'),
     path('download/<int:pk>/', download_arquivo, name='download_arquivo'),
+    path('health/', health_check, name='health_check')
 ]
 
 # Verifica se o usuário é superusuário
