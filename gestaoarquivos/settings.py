@@ -14,7 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-lrx&j+ep=-tzn$1-$6m-8et(m!q880z&7*ofx-6a#5p$lg8l)i'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['arquivosdesa.azurewebsites.net','localhost','127.0.0.1']
 CSRF_TRUSTED_ORIGINS = ['https://arquivosdesa.azurewebsites.net']
