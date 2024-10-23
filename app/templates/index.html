@@ -148,7 +148,7 @@
         {% endif %}
 
         <!-- Botão Sair -->
-        <div class="text-right mt-5">
+        <div class="text-right mt-5 mb-5">
             <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#logoutModal">
                 Sair
             </button>
@@ -181,26 +181,46 @@
         document.getElementById('searchInput').addEventListener('keyup', function() {
             var input, filter, table, tr, td, i, txtValue;
             input = document.getElementById('searchInput');
-            filter = input.value.toLowerCase();
-            table = document.getElementById('arquivoTable');
+            filter   
+         = input.value.toLowerCase();
+            table = document.getElementById('arquivoTable');   
+        
             tr = table.getElementsByTagName('tr');
-
+        
             for (i = 0; i < tr.length; i++) {
-                td = tr[i].getElementsByTagName('td')[2];  // Index 2 para filtrar pelo código
-                if (td) {
-                    txtValue = td.textContent || td.innerText;
-                    if (txtValue.toLowerCase().indexOf(filter) > -1) {
-                        tr[i].style.display = "";
-                    } else {
-                        tr[i].style.display = "none";
+                // Busca em todas as colunas
+                var encontrado = false;
+                for (var j = 1; j < tr[i].cells.length - 1; j++) { // Ignora a primeira coluna (download) e a última (versão)
+                    td = tr[i].getElementsByTagName('td')[j];
+                    if (td) {
+                        txtValue = td.textContent || td.innerText;
+                        if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                            encontrado = true;
+                            break;
+                        }
                     }
                 }
+        
+                tr[i].style.display = encontrado ? "" : "none";
             }
-
+        
+            // Ordenação pelo código (coluna 3)
             var rows = Array.prototype.slice.call(tr);
             rows.sort(function(a, b) {
-                var A = a.getElementsByTagName('td')[2].innerText.toLowerCase();  // Index 2 para ordenar pelo código
+                var A = a.getElementsByTagName('td')[2].innerText.toLowerCase(); 
                 var B = b.getElementsByTagName('td')[2].innerText.toLowerCase();
+                return A < B ? -1 : A > B ? 1 : 0;
+            });
+        
+            for (i = 0; i < rows.length; i++) {
+                table.appendChild(rows[i]);
+            }
+
+            // Ordenação pelo nome do arquivo (coluna 2)
+            var rows = Array.prototype.slice.call(tr);
+            rows.sort(function(a, b) {
+                var A = a.getElementsByTagName('td')[1].innerText.toLowerCase(); 
+                var B = b.getElementsByTagName('td')[1].innerText.toLowerCase();
                 return A < B ? -1 : A > B ? 1 : 0;
             });
 
